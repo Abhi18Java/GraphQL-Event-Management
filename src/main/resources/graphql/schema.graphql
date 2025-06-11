@@ -1,0 +1,78 @@
+directive @secured(role: String!) on FIELD_DEFINITION
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    bookings: [Booking!]!
+    role: Role!
+}
+
+type Event {
+    id: ID!
+    title: String!
+    description: String
+    date: String!
+    location: String!
+    availableSeats: Int!
+    bookings: [Booking!]!
+}
+
+type Booking {
+    id: ID!
+    event: Event!
+    user: User!
+    timestamp: String!
+}
+
+type Query {
+    getAllEvents(limit: Int, offset: Int): [Event!]!
+    getEventById(id: ID!): Event
+    getUserBookings(userId: ID!): [Booking!]!
+    getEventBookings(eventId: ID!): [Booking!]!
+}
+
+type Mutation {
+    signup(input: SignupDTO!): AuthPayloadDTO!
+    login(input: LoginDTO!): AuthPayloadDTO!
+    createEvent(input: CreateEventDTO): Event! @secured(role: "ADMIN")
+    updateEvent(eventId: ID!, input: UpdateEventInput!): Event! @secured(role: "ADMIN")
+    bookEvent(userId: ID!, eventId: ID!): Booking!
+    cancelBooking(bookingId: ID!): Boolean!
+}
+
+type AuthPayloadDTO {
+    token: String!
+    message: String!
+}
+
+input CreateEventDTO {
+    title: String!
+    description: String
+    date: String!
+    location: String!
+    availableSeats: Int!
+}
+
+input UpdateEventInput {
+    title: String
+    description: String
+    date: String
+    location: String
+    availableSeats: Int
+}
+
+input SignupDTO {
+    username: String!
+    email: String!
+    password: String!
+    role: Role! = USER
+}
+
+input LoginDTO {
+    username: String!
+    password: String!
+}
+
+enum Role {
+    USER, ADMIN
+}
