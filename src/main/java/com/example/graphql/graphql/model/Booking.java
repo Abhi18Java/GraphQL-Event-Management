@@ -31,4 +31,7 @@ public class Booking {
     private User user;
 
     private String timestamp;
+
+    private int seats;
+
 }

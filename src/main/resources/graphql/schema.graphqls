@@ -22,6 +22,7 @@ type Booking {
     event: Event!
     user: User!
     timestamp: String!
+    seats: Int!
 }
 
 type Query {
@@ -36,7 +37,7 @@ type Mutation {
     login(input: LoginDTO!): AuthPayloadDTO!
     createEvent(input: CreateEventDTO): Event! @secured(role: "ADMIN")
     updateEvent(eventId: ID!, input: UpdateEventInput!): Event! @secured(role: "ADMIN")
-    bookEvent(userId: ID!, eventId: ID!): Booking!
+    bookEvent(eventId: ID!, seats: Int!): Booking!
     cancelBooking(bookingId: ID!): Boolean!
 }
 

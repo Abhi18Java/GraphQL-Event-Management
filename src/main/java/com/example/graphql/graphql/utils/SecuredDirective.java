@@ -24,20 +24,18 @@ public class SecuredDirective implements SchemaDirectiveWiring {
         GraphQLFieldDefinition field = env.getElement();
         GraphQLFieldsContainer parent = env.getFieldsContainer();
 
-
         String roleValue = ((StringValue) env.getAppliedDirective()
                 .getArgument("role")
                 .getArgumentValue()
                 .getValue()).getValue();
         String requiredRole = "ROLE_" + roleValue;
-        System.out.println(requiredRole);
 
         DataFetcher<?> originalFetcher = env.getCodeRegistry().getDataFetcher((GraphQLObjectType) parent, field);
         DataFetcher<?> authFetcher = dataFetchingEnvironment -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (authentication == null || !authentication.isAuthenticated()) {
-                throw new AccessDeniedException();
+                throw new AccessDeniedException("You are not authorized to perform this action");
             }
 
             boolean hasRole = authentication.getAuthorities().stream()
@@ -46,7 +44,7 @@ public class SecuredDirective implements SchemaDirectiveWiring {
             System.out.println("Has required role? " + hasRole);
 
             if (!hasRole) {
-                throw new AccessDeniedException();
+                throw new AccessDeniedException("You are not authorized to perform this action");
             }
 
             return originalFetcher.get(dataFetchingEnvironment);
