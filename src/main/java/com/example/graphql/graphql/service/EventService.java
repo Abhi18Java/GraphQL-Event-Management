@@ -1,23 +1,25 @@
 package com.example.graphql.graphql.service;
 
+import com.example.graphql.graphql.dto.BookingDTO;
 import com.example.graphql.graphql.dto.CreateEventDTO;
+import com.example.graphql.graphql.dto.EventDTO;
 import com.example.graphql.graphql.model.Booking;
 import com.example.graphql.graphql.model.Event;
 
 import java.util.List;
 
 public interface EventService {
-    Event createEvent(CreateEventDTO createEventDTO);
-    Event updateEvent(int eventId, CreateEventDTO createEventDTO);
-    Booking bookEvent(int eventId, int seats);
+    EventDTO createEvent(CreateEventDTO createEventDTO);
+    EventDTO updateEvent(int eventId, CreateEventDTO createEventDTO);
+    BookingDTO bookEvent(int eventId, int seats);
 
     Boolean cancelBooking(int bookingId);
 
-    List<Event> getAllEvents();
+    List<EventDTO> getAllEvents();
 
-    Event getEventById(int id);
+    EventDTO getEventById(int id);
 
-    List<Booking> getUserBookings(int userId);
+    List<BookingDTO> getUserBookings(int userId);
 
-    List<Booking> getEventBookings(int eventId);
+    List<BookingDTO> getEventBookings(int eventId);
 }

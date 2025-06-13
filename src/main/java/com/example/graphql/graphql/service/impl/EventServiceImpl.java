@@ -1,6 +1,8 @@
 package com.example.graphql.graphql.service.impl;
 
+import com.example.graphql.graphql.dto.BookingDTO;
 import com.example.graphql.graphql.dto.CreateEventDTO;
+import com.example.graphql.graphql.dto.EventDTO;
 import com.example.graphql.graphql.exceptions.IllegalArgumentException;
 import com.example.graphql.graphql.exceptions.ResourceNotFoundException;
 import com.example.graphql.graphql.exceptions.UnauthorizedAccessException;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -37,7 +40,7 @@ public class EventServiceImpl implements EventService {
     private BookingRepository bookingRepository;
 
     @Override
-    public Event createEvent(CreateEventDTO createEventDTO) {
+    public EventDTO createEvent(CreateEventDTO createEventDTO) {
         if (createEventDTO.getTitle() == null || createEventDTO.getTitle().isEmpty()) {
             throw new IllegalArgumentException("Title field cannot be null");
         }
@@ -61,11 +64,12 @@ public class EventServiceImpl implements EventService {
         }
 
         Event event = modelMapper.map(createEventDTO, Event.class);
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+        return modelMapper.map(savedEvent, EventDTO.class);
     }
 
     @Override
-    public Event updateEvent(int eventId, CreateEventDTO createEventDTO) {
+    public EventDTO updateEvent(int eventId, CreateEventDTO createEventDTO) {
 
         Event existingEvent = eventRepository.findById(eventId).orElseThrow(
                 () -> new ResourceNotFoundException("Event not found with given ID:" + eventId));
@@ -100,23 +104,23 @@ public class EventServiceImpl implements EventService {
         existingEvent.setLocation(createEventDTO.getLocation());
         existingEvent.setAvailableSeats(createEventDTO.getAvailableSeats());
 
-        return eventRepository.save(existingEvent);
-
+        Event updateEvent = eventRepository.save(existingEvent);
+        return modelMapper.map(updateEvent, EventDTO.class);
     }
 
     @Override
     @Transactional
-    public Booking bookEvent(int eventId, int seats) {
+    public BookingDTO bookEvent(int eventId, int seats) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("No Event found with eventId: " + eventId));
+                .orElseThrow(() -> new ResourceNotFoundException("No Event found with eventId: " + eventId));
 
         Optional<Booking> existingBooking = bookingRepository.findByUserAndEvent(user, event);
         if (existingBooking.isPresent()) {
-            throw new IllegalStateException("User has already booked this event.");
+            throw new IllegalArgumentException("User has already booked this event.");
         }
 
         if (event.getAvailableSeats() <= seats) {
@@ -131,7 +135,8 @@ public class EventServiceImpl implements EventService {
 
         event.setAvailableSeats(event.getAvailableSeats() - seats);
         eventRepository.save(event);
-        return bookingRepository.save(booking);
+        Booking bookedEvent = bookingRepository.save(booking);
+        return modelMapper.map(bookedEvent, BookingDTO.class);
     }
 
     @Override
@@ -156,37 +161,43 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<EventDTO> getAllEvents() {
+        return eventRepository.findAll()
+                .stream()
+                .map(event -> modelMapper.map(event, EventDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Event getEventById(int id) {
+    public EventDTO getEventById(int id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No Event found for Id: " + id));
 
-        return event;
+        return modelMapper.map(event, EventDTO.class);
     }
 
     @Override
-    public List<Booking> getUserBookings(int userId) {
+    public List<BookingDTO> getUserBookings(int userId) {
         List<Booking> booking = bookingRepository.findByUserId(userId);
 
         if (booking.isEmpty()) {
             throw new ResourceNotFoundException("No Bookings found for userId: " + userId);
         }
-
-        return booking;
+        return booking.stream()
+                .map(bookingEntity -> modelMapper.map(bookingEntity, BookingDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Booking> getEventBookings(int eventId) {
+    public List<BookingDTO> getEventBookings(int eventId) {
         List<Booking> eventBookings = bookingRepository.findByEventId(eventId);
 
         if (eventBookings.isEmpty()) {
             throw new ResourceNotFoundException("No bookings found for event with ID: " + eventId);
         }
-        return eventBookings;
+        return eventBookings.stream()
+                .map(bookingEntity -> modelMapper.map(bookingEntity, BookingDTO.class))
+                .collect(Collectors.toList());
     }
 
 }

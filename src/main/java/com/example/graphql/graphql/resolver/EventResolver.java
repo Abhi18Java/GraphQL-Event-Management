@@ -1,6 +1,8 @@
 package com.example.graphql.graphql.resolver;
 
+import com.example.graphql.graphql.dto.BookingDTO;
 import com.example.graphql.graphql.dto.CreateEventDTO;
+import com.example.graphql.graphql.dto.EventDTO;
 import com.example.graphql.graphql.exceptions.UnauthorizedAccessException;
 import com.example.graphql.graphql.model.Booking;
 import com.example.graphql.graphql.model.Event;
@@ -25,19 +27,19 @@ public class EventResolver {
 
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Event createEvent(@Argument("input") CreateEventDTO createEventDTO) {
+    public EventDTO createEvent(@Argument("input") CreateEventDTO createEventDTO) {
         return eventService.createEvent(createEventDTO);
     }
 
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Event updateEvent(@Argument int eventId, @Argument("input") CreateEventDTO createEventDTO) {
+    public EventDTO updateEvent(@Argument int eventId, @Argument("input") CreateEventDTO createEventDTO) {
         return eventService.updateEvent(eventId, createEventDTO);
     }
 
     @MutationMapping
     @PreAuthorize("hasRole('USER')")
-    public Booking bookEvent(@Argument int eventId, @Argument int seats) {
+    public BookingDTO bookEvent(@Argument int eventId, @Argument int seats) {
         return eventService.bookEvent(eventId, seats);
     }
 
@@ -48,7 +50,7 @@ public class EventResolver {
     }
 
     @QueryMapping
-    public List<Event> getAllEvents() throws AccessDeniedException {
+    public List<EventDTO> getAllEvents() throws AccessDeniedException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedAccessException("Unauthorized");
@@ -58,7 +60,7 @@ public class EventResolver {
     }
 
     @QueryMapping
-    public Event getEventById(@Argument int id) {
+    public EventDTO getEventById(@Argument int id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedAccessException("Unauthorized");
@@ -68,13 +70,13 @@ public class EventResolver {
 
     @QueryMapping
     @PreAuthorize("hasRole('USER')")
-    public List<Booking> getUserBookings(@Argument int userId) {
+    public List<BookingDTO> getUserBookings(@Argument int userId) {
         return eventService.getUserBookings(userId);
     }
 
     @QueryMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public List<Booking> getEventBookings(@Argument int eventId) {
+    public List<BookingDTO> getEventBookings(@Argument int eventId) {
         return eventService.getEventBookings(eventId);
     }
 

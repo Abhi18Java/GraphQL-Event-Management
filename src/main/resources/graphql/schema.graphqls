@@ -7,6 +7,11 @@ type User {
     role: Role!
 }
 
+type UserDTO {
+    username: String!
+    email: String!
+}
+
 type Event {
     id: ID!
     title: String!
@@ -17,6 +22,16 @@ type Event {
     bookings: [Booking!]!
 }
 
+type EventDTO {
+    id: ID!
+    title: String!
+    description: String
+    date: String!
+    location: String!
+    availableSeats: Int!
+    bookings: BookingDTO!
+}
+
 type Booking {
     id: ID!
     event: Event!
@@ -25,20 +40,28 @@ type Booking {
     seats: Int!
 }
 
+type BookingDTO {
+    id: ID!
+    event: EventDTO!
+    user: UserDTO!
+    timestamp: String!
+    seats: Int!
+}
+
 type Query {
-    getAllEvents: [Event!]!
-    getEventById(id: ID!): Event
-    getUserBookings(userId: ID!): [Booking!]! @secured(role: "USER")
-    getEventBookings(eventId: ID!): [Booking!]! @secured(role: "ADMIN")
+    getAllEvents: [EventDTO!]!
+    getEventById(id: ID!): EventDTO
+    getUserBookings(userId: ID!): [BookingDTO!]! @secured(role: "USER")
+    getEventBookings(eventId: ID!): [BookingDTO!]! @secured(role: "ADMIN")
 }
 
 type Mutation {
     signup(input: SignupDTO!): AuthPayloadDTO!
     login(input: LoginDTO!): AuthPayloadDTO!
-    createEvent(input: CreateEventDTO): Event! @secured(role: "ADMIN")
+    createEvent(input: CreateEventDTO): EventDTO! @secured(role: "ADMIN")
     updateEvent(eventId: ID!, input: UpdateEventInput!): Event! @secured(role: "ADMIN")
-    bookEvent(eventId: ID!, seats: Int!): Booking!
-    cancelBooking(bookingId: ID!): Boolean!
+    bookEvent(eventId: ID!, seats: Int!): BookingDTO!  @secured(role: "USER")
+    cancelBooking(bookingId: ID!): Boolean! @secured(role: "USER")
 }
 
 type AuthPayloadDTO {
