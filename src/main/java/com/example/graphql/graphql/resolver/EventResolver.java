@@ -1,6 +1,7 @@
 package com.example.graphql.graphql.resolver;
 
 import com.example.graphql.graphql.dto.CreateEventDTO;
+import com.example.graphql.graphql.exceptions.UnauthorizedAccessException;
 import com.example.graphql.graphql.model.Booking;
 import com.example.graphql.graphql.model.Event;
 import com.example.graphql.graphql.service.EventService;
@@ -9,7 +10,12 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+
+import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @Controller
 public class EventResolver {
@@ -39,6 +45,37 @@ public class EventResolver {
     @PreAuthorize("hasRole('USER')")
     public Boolean cancelBooking(@Argument int bookingId) {
         return eventService.cancelBooking(bookingId);
+    }
+
+    @QueryMapping
+    public List<Event> getAllEvents() throws AccessDeniedException {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new UnauthorizedAccessException("Unauthorized");
+        }
+
+        return eventService.getAllEvents();
+    }
+
+    @QueryMapping
+    public Event getEventById(@Argument int id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new UnauthorizedAccessException("Unauthorized");
+        }
+        return eventService.getEventById(id);
+    }
+
+    @QueryMapping
+    @PreAuthorize("hasRole('USER')")
+    public List<Booking> getUserBookings(@Argument int userId) {
+        return eventService.getUserBookings(userId);
+    }
+
+    @QueryMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<Booking> getEventBookings(@Argument int eventId) {
+        return eventService.getEventBookings(eventId);
     }
 
 }

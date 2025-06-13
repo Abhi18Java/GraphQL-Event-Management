@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -152,6 +153,40 @@ public class EventServiceImpl implements EventService {
 
         bookingRepository.delete(existingBooking);
         return true;
+    }
+
+    @Override
+    public List<Event> getAllEvents() {
+        return eventRepository.findAll();
+    }
+
+    @Override
+    public Event getEventById(int id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No Event found for Id: " + id));
+
+        return event;
+    }
+
+    @Override
+    public List<Booking> getUserBookings(int userId) {
+        List<Booking> booking = bookingRepository.findByUserId(userId);
+
+        if (booking.isEmpty()) {
+            throw new ResourceNotFoundException("No Bookings found for userId: " + userId);
+        }
+
+        return booking;
+    }
+
+    @Override
+    public List<Booking> getEventBookings(int eventId) {
+        List<Booking> eventBookings = bookingRepository.findByEventId(eventId);
+
+        if (eventBookings.isEmpty()) {
+            throw new ResourceNotFoundException("No bookings found for event with ID: " + eventId);
+        }
+        return eventBookings;
     }
 
 }

@@ -3,6 +3,7 @@ package com.example.graphql.graphql.resolver;
 import com.example.graphql.graphql.exceptions.AccessDeniedException;
 import com.example.graphql.graphql.exceptions.IllegalArgumentException;
 import com.example.graphql.graphql.exceptions.ResourceNotFoundException;
+import com.example.graphql.graphql.exceptions.UnauthorizedAccessException;
 import com.example.graphql.graphql.exceptions.UserAlreadyExistException;
 import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
@@ -23,12 +24,14 @@ public class CustomExceptionResolver implements DataFetcherExceptionResolver {
         String errorMessage;
 
         if (exception instanceof AccessDeniedException) {
-            errorMessage = "You do not have the required privileges to perform this action";
+            errorMessage = exception.getMessage();
         } else if (exception instanceof UserAlreadyExistException) {
-            errorMessage = "User already exists with the provided details";
+            errorMessage = exception.getMessage();
         } else if (exception instanceof ResourceNotFoundException) {
-            errorMessage = "Requested resource not found";
+            errorMessage = exception.getMessage();
         } else if (exception instanceof IllegalArgumentException) {
+            errorMessage = exception.getMessage();
+        } else if (exception instanceof UnauthorizedAccessException) {
             errorMessage = exception.getMessage();
         } else {
             errorMessage = "An unexpected error occurred";

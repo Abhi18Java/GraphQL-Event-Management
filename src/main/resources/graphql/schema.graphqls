@@ -26,10 +26,10 @@ type Booking {
 }
 
 type Query {
-    getAllEvents(limit: Int, offset: Int): [Event!]!
+    getAllEvents: [Event!]!
     getEventById(id: ID!): Event
-    getUserBookings(userId: ID!): [Booking!]!
-    getEventBookings(eventId: ID!): [Booking!]!
+    getUserBookings(userId: ID!): [Booking!]! @secured(role: "USER")
+    getEventBookings(eventId: ID!): [Booking!]! @secured(role: "ADMIN")
 }
 
 type Mutation {
